@@ -2,13 +2,12 @@ import { WebSocket } from 'ws';
 import Anthropic from '@anthropic-ai/sdk';
 
 
-const CLAUDE_API_KEY = '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';
-const API_KEY = '00aa9db6c7dd16787177c0f0ea5552d8c7ad4b4e01f7c405e0b7e17e3a3e084d';
-
-
+const API_KEY = process.env.TREE_API_KEY;
 const anthropic = new Anthropic({
-    apiKey: CLAUDE_API_KEY
+    apiKey: process.env.ANTHROPIC_API_KEY
 });
+
+const prompt = process.env.ALERT_PROMPT || '';
 
 
 interface Context {
@@ -49,7 +48,8 @@ async function sendToClaude(context: Context, message: any) {
             ? `Tweets:\n${context.tweets.map(t => `- ${t.id}:\n  ${t.content}`).join('\n')}`
             : 'No tweets provided';
 
-        const prompt = `
+
+        const local_prompt = prompt || `
 Here is the context of URLs and tweets:
 
 ${urlsContent}
@@ -62,7 +62,7 @@ You are a senior financial analyst with 20 years of experience and 5 years of ex
 
 If the news is important and I should wake up, start answer with "WAKE UP". You should explain why the news is important so that I read it as soon as I wake up from your message. If the news is not important, just say "OK" and also explain why it is not important.`;
 
-        console.log('Sending to Claude:\n', prompt);
+        console.log('Sending to Claude:\n', local_prompt);
 
         const response = await anthropic.messages.create({
             model: "claude-3-5-sonnet-20241022",
